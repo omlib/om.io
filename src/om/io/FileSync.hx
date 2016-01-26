@@ -45,7 +45,8 @@ class FileSync {
 	*/
 	public static function syncDirectory( src : String, dst : String, recursive = true ) : Bool {
 		if( !exists( src ) )
-			throw 'Source directory not found : $src';
+			return false;
+			//throw 'Source directory not found : $src';
 		if( !exists( dst ) )
 			createDirectory( dst );
 		for( f in readDirectory( src ) ) {

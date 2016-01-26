@@ -81,14 +81,35 @@ class FileUtil {
 		return false;
 	}
 
+	/*
+	public static inline function renameDirectory( path : String ) : Xml {
+		return Xml.parse( File.getContent( path ) ).firstElement();
+	}
+	*/
+
 	/**
 	*/
-	public static function readTextContents( path : String ) : String {
+	public static inline function getXmlContent( path : String ) : Xml {
+		return Xml.parse( File.getContent( path ) ).firstElement();
+	}
+
+
+	/**
+	*/
+	public static function getTextContents( path : String ) : String {
 		var buf = new StringBuf();
 		for( f in FileSystem.readDirectory( path ) )
 			buf.add( File.getContent( '$path/$f' ) );
 		return buf.toString();
 	}
+
+	/*
+	public static function countFiles( path : String ) : Int {
+	}
+
+	public static function getSize( path : String ) : Int {
+	}
+	*/
 
 	////////////////////////////////////////////////////////////////////////////
 
