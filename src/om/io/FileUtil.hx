@@ -3,11 +3,12 @@ package om.io;
 #if (sys||nodejs)
 import sys.FileSystem;
 import sys.io.File;
+import haxe.Json;
 #end
 
-#if nodejs
+#if (!macro&&nodejs)
 //import js.Error;
-//import js.node.Fs;
+import js.node.Fs;
 #end
 
 using StringTools;
@@ -17,6 +18,32 @@ using haxe.io.Path;
 	File system helpers.
 */
 class FileUtil {
+
+	public static inline function count( dir : String ) : Int {
+		return FileSystem.readDirectory( dir ).length;
+	}
+
+	public static inline function size( path : String ) : Int {
+		return FileSystem.stat( path ).size;
+	}
+
+	public static inline function modTime( path : String ) : Float {
+		return FileSystem.stat( path ).mtime.getTime();
+	}
+
+	public static function getLastModifiedFile( dir : String ) : String {
+		var time = 0.0;
+		var path : String = null;
+		for( f in FileSystem.readDirectory( dir ) ) {
+			var p = '$dir/$f';
+			var fTime = modTime( p );
+			if( fTime > time ) {
+				time = fTime;
+				path = f;
+			}
+		}
+		return path;
+	}
 
 	/**
 		Returns the relative path to the given absolute path.
@@ -39,20 +66,62 @@ class FileUtil {
 		return path.join('/');
 	}
 
-	/**
-	*/
-	public static inline function size( path : String ) : Int {
-		return FileSystem.stat( path ).size;
+	public static inline function isEmptyDirectory( dir : String ) : Bool {
+		return count( dir ) == 0;
 	}
 
-	/**
-	*/
-	public static inline function modTime( path : String ) : Float {
-		return FileSystem.stat( path ).mtime.getTime();
+	public static function createDirectory( path : String ) {
+		var parts = path.split( '/' );
+		var current = '';
+		for( part in parts ) {
+			current += '$part/';
+			if( !sys.FileSystem.exists( current ) )
+				sys.FileSystem.createDirectory( current );
+		}
 	}
 
-	/**
-	*/
+	public static inline function getXmlContent( path : String ) : Xml {
+		return Xml.parse( sys.io.File.getContent( path ) ).firstElement();
+	}
+
+	public static inline function getJsonContent<T>( path : String ) : T {
+		return Json.parse( sys.io.File.getContent( path ) );
+	}
+
+	public static function getTextContents( path : String ) : String {
+		var buf = new StringBuf();
+		for( f in FileSystem.readDirectory( path ) )
+			buf.add( sys.io.File.getContent( '$path/$f' ) );
+		return buf.toString();
+	}
+
+	public static inline function createTextFile( path : String, ?content : String ) {
+		var dir = path.directory();
+		if( sys.FileSystem.exists( dir ) ) {
+			if( sys.FileSystem.exists( path ) )
+				throw 'file exists: $path';
+			writeTextFile( path );
+		} else {
+			createDirectory( dir );
+			writeTextFile( path );
+		}
+	}
+
+	public static inline function writeTextFile( path : String, ?content : String ) {
+
+		#if (nodejs&&!macro)
+		var f = Fs.openSync( path, 'w' );
+		if( content != null ) Fs.writeSync( f, content );
+		Fs.closeSync( f );
+
+		#elseif sys
+		var f = sys.io.File.write( path );
+        if( content != null ) f.writeString( content );
+        f.close();
+		
+		#end
+	}
+
 	public static function deleteDirectory( path : String, recursive = true ) {
 		//if( !FileSystem.exists( path ) )
 		//	return;
@@ -67,8 +136,6 @@ class FileUtil {
 		FileSystem.deleteDirectory( path );
 	}
 
-	/**
-	*/
 	public static function directoryExistsOrCreate( path : String ) : Bool {
 		if( !FileSystem.exists( path ) ) {
 			FileSystem.createDirectory( path );
@@ -81,39 +148,27 @@ class FileUtil {
 		return false;
 	}
 
-	/*
-	public static inline function renameDirectory( path : String ) : Xml {
-		return Xml.parse( File.getContent( path ) ).firstElement();
-	}
-	*/
+	#if (!macro&&nodejs) ///////////////////////////////////////////////////////
 
-	/**
-	*/
-	public static inline function getXmlContent( path : String ) : Xml {
-		return Xml.parse( File.getContent( path ) ).firstElement();
+	public static inline function exists( path : String, callback : Bool->Void ) {
+		Fs.stat( path, function(e,_) callback( e == null ) );
 	}
 
-
-	/**
-	*/
-	public static function getTextContents( path : String ) : String {
-		var buf = new StringBuf();
-		for( f in FileSystem.readDirectory( path ) )
-			buf.add( File.getContent( '$path/$f' ) );
-		return buf.toString();
+	public static inline function isDirectory( path : String, callback : Bool->Void ) {
+		Fs.stat( path, function(e,s) (e != null) ? callback( null ) : callback( s.isDirectory() ) );
 	}
 
-	/*
-	public static function countFiles( path : String ) : Int {
+	public static inline function readDirectorySync( path : String ) : Array<String> {
+		return Fs.readdirSync( path );
 	}
 
-	public static function getSize( path : String ) : Int {
+	public static inline function existsSync( path : String ) : Bool {
+		return try { Fs.accessSync( path ); true; } catch (_:Dynamic) false;
 	}
-	*/
 
-	////////////////////////////////////////////////////////////////////////////
-
-	#if nodejs
+	public static inline function isDirectorySync( path : String ) : Bool {
+		return Fs.statSync( path ).isDirectory();
+	}
 
 	/*
 	public static function deleteDirectorySync( path : String, recursive = true ) {
@@ -155,30 +210,6 @@ class FileUtil {
 	*/
 
 	/*
-
-	//TODO holy crap!
-
-	public static function deleteDirectory( path : String, recursive = true, ?callback : Error->Void ) {
-		isDirectory( path, function(yes){
-			if( yes ) {
-				_deleteDirectory( path, callback );
-			} else {
-				if( callback != null ) callback( new Error( 'not exists' ) );
-			}
-		});
-	}
-
-	static function _deleteDirectory( path : String, ?callback : Error->Void ) {
-		Fs.readdir( path, function(e,entries) {
-			if( e != null ) {
-				if( callback != null ) callback(e);
-				return;
-			} else {
-				_deleteDirectoryEntries( path, entries, callback );
-			}
-		});
-	}
-
 	static function _deleteDirectoryEntries( path : String, entries : Array<String>, ?callback : Error->Void ) {
 		trace("_deleteDirectoryEntries "+path+ " : "+entries.length);
 		if( entries.length == 0 ) {
@@ -258,8 +289,6 @@ class FileUtil {
 	}
 	*/
 
-
-
-	#end
+	#end // nodejs
 
 }
