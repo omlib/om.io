@@ -1,4 +1,4 @@
-package om.io._node;
+package om.io.node;
 
 import js.node.Fs;
 import js.node.fs.FSWatcher;

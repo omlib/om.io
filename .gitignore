@@ -1,1 +1,4 @@
-
+_*
+examples/*/*.js*
+test/unit*
+haxedoc.xml

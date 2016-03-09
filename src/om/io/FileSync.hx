@@ -17,7 +17,7 @@ using om.io.FileUtil;
 class FileSync {
 
 	/**
-		Returns true if target file doesn't exist or is older as source file.
+		Returns true if destination file doesn't exist or is older as source file.
 	*/
 	public static function needsUpdate( src : String, dst : String ) : Bool {
 		return exists( dst ) ? src.modTime() > dst.modTime() : true;

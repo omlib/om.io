@@ -1,4 +1,4 @@
 
-# Om.io
+# OM|IO
 
-Haxe/Sys file system utilities and helpers.
+Filesystem utilities and helpers.
