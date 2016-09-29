@@ -1,5 +1,7 @@
 package om.io;
 
+#if sys
+
 class Fifo {
 
 	/**
@@ -23,3 +25,5 @@ class Fifo {
 	}
 
 }
+
+#end

@@ -1,15 +1,6 @@
 package om.io;
 
-#if (sys||nodejs)
-import sys.FileSystem;
-import sys.io.File;
 import haxe.Json;
-#end
-
-#if (!macro&&nodejs)
-//import js.Error;
-import js.node.Fs;
-#end
 
 using StringTools;
 using haxe.io.Path;
@@ -18,6 +9,23 @@ using haxe.io.Path;
 	File system helpers.
 */
 class FileUtil {
+
+	public static inline function exists( path : String ) : Bool {
+
+		#if sys
+		return sys.FileSystem.exists( path );
+
+		#elseif nodejs
+		try js.node.Fs.accessSync(path) catch(_:Dynamic) {
+			return false;
+		}
+		return true;
+
+		#else
+		return throw 'not implemented';
+
+		#end
+	}
 
 	public static inline function count( dir : String ) : Int {
 		return FileSystem.readDirectory( dir ).length;
@@ -66,9 +74,8 @@ class FileUtil {
 		return path.join('/');
 	}
 
-	public static inline function isEmptyDirectory( dir : String ) : Bool {
+	public static inline function isEmpty( dir : String ) : Bool
 		return count( dir ) == 0;
-	}
 
 	public static function createDirectory( path : String ) {
 		var parts = path.split( '/' );
@@ -95,10 +102,21 @@ class FileUtil {
 		return buf.toString();
 	}
 
+	public static inline function touch( path : String ) {
+
+		#if (nodejs&&!macro)
+		js.node.Fs.closeSync( js.node.Fs.openSync( path, 'w' ) );
+
+		#elseif sys
+		sys.io.File.write( path ).close();
+
+		#end
+	}
+
 	public static inline function createTextFile( path : String, ?content : String ) {
 		var dir = path.directory();
-		if( sys.FileSystem.exists( dir ) ) {
-			if( sys.FileSystem.exists( path ) )
+		if( FileSystem.exists( dir ) ) {
+			if( FileSystem.exists( path ) )
 				throw 'file exists: $path';
 			writeTextFile( path );
 		} else {
@@ -110,15 +128,15 @@ class FileUtil {
 	public static inline function writeTextFile( path : String, ?content : String ) {
 
 		#if (nodejs&&!macro)
-		var f = Fs.openSync( path, 'w' );
-		if( content != null ) Fs.writeSync( f, content );
-		Fs.closeSync( f );
+		var f = js.node.Fs.openSync( path, 'w' );
+		if( content != null ) js.node.Fs.writeSync( f, content );
+		js.node.Fs.closeSync( f );
 
 		#elseif sys
 		var f = sys.io.File.write( path );
         if( content != null ) f.writeString( content );
         f.close();
-		
+
 		#end
 	}
 
@@ -150,6 +168,7 @@ class FileUtil {
 
 	#if (!macro&&nodejs) ///////////////////////////////////////////////////////
 
+	/*
 	public static inline function exists( path : String, callback : Bool->Void ) {
 		Fs.stat( path, function(e,_) callback( e == null ) );
 	}
@@ -157,17 +176,18 @@ class FileUtil {
 	public static inline function isDirectory( path : String, callback : Bool->Void ) {
 		Fs.stat( path, function(e,s) (e != null) ? callback( null ) : callback( s.isDirectory() ) );
 	}
+	*/
 
 	public static inline function readDirectorySync( path : String ) : Array<String> {
-		return Fs.readdirSync( path );
+		return js.node.Fs.readdirSync( path );
 	}
 
 	public static inline function existsSync( path : String ) : Bool {
-		return try { Fs.accessSync( path ); true; } catch (_:Dynamic) false;
+		return try { js.node.Fs.accessSync( path ); true; } catch (_:Dynamic) false;
 	}
 
 	public static inline function isDirectorySync( path : String ) : Bool {
-		return Fs.statSync( path ).isDirectory();
+		return js.node.Fs.statSync( path ).isDirectory();
 	}
 
 	/*

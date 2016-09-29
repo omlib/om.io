@@ -1,4 +1,4 @@
 
 # OM|IO
 
-Filesystem utilities and helpers.
+Filesystem and generic input/output helpers.

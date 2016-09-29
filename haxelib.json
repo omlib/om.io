@@ -1,14 +1,15 @@
 {
     "name": "om.io",
     "version": "0.1.0",
-    "description": "Om io library",
-    "tags": ["om","core"],
+    "description": "Filesystem helpers",
+    "tags": ["om","io"],
     "url": "https://github.com/tong/om.io",
-    "license": "GPL",
+    "license": "OM",
     "contributors": ["tong"],
     "releasenote": "See CHANGELOG.md",
     "classPath" : "src/",
     "dependencies": {
-		"om.core":""
+		"om.core":"",
+		"om.crypto":""
 	}
 }

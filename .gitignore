@@ -1,4 +1,4 @@
 _*
-examples/*/*.js*
+doc/
+examples**/app*
 test/unit*
-haxedoc.xml

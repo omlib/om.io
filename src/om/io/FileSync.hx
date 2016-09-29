@@ -41,7 +41,7 @@ class FileSync {
 	}
 
 	/**
-
+		Synchronizes directory.
 	*/
 	public static function syncDirectory( src : String, dst : String, recursive = true ) : Bool {
 		if( !exists( src ) )
