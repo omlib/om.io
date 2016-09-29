@@ -1,0 +1,50 @@
+--no-output
+-cp src
+-lib om.core
+-lib om.crypto
+-lib inotify
+om.io.Fifo
+om.io.FileSearch
+om.io.FileUtil
+om.io.FileWatch
+--each
+
+--next
+-cpp x
+-xml doc/cpp.xml
+
+--next
+-cs x
+-xml doc/cs.xml
+
+--next
+-hl x
+-xml doc/hl.xml
+
+--next
+-java x
+-xml doc/java.xml
+
+--next
+-lua x
+-xml doc/lua.xml
+
+--next
+-neko x
+-xml doc/neko.xml
+
+--next
+-js x
+-lib hxnodejs
+-xml doc/node.xml
+
+--next
+-php x
+-xml doc/php.xml
+
+--next
+-python x
+-xml doc/python.xml
+
+#--next
+#-cmd haxelib run dox -o doc/ -i ./ -D source-path https://github.com/tong/chrome.app/blob/master/src
