@@ -161,7 +161,7 @@ class FileUtil {
 		}
 		#if dev
 		else if( !FileSystem.isDirectory( path ) )
-			Console.warn( 'Not a directory [$path]' );
+			trace( 'Not a directory [$path]' );
 		#end
 		return false;
 	}
