@@ -1,4 +1,6 @@
 
-# OM|IO
+# OM.IO
 
-Filesystem and generic input/output helpers.
+> Filesystem tools.
+
+**! DEPRICATED in favour of om.fs**
